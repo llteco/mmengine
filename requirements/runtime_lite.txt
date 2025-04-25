@@ -1,4 +1,5 @@
 addict
+mmengine-config
 numpy
 pyyaml
 regex;sys_platform=='win32'
