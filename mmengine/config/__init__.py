@@ -1,3 +1,3 @@
-from mme.config import Config, ConfigDict, DictAction
+from mme.config import Config, ConfigDict, DictAction, read_base
 
-__all__ = ["Config", "ConfigDict", "DictAction"]
+__all__ = ["Config", "ConfigDict", "DictAction", "read_base"]
