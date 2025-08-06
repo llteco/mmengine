@@ -45,6 +45,9 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.dvcignore
+dvc.yaml
+.dvc/
 
 # Translations
 *.mo
@@ -121,3 +124,6 @@ work_dirs/
 *.pth
 *.py~
 *.sh~
+
+# uv
+uv.lock

@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=42", "wheel>=0.45.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mmengine"
+description = "Engine of OpenMMLab projects"
+requires-python = ">=3.11"
+authors = [{ name = "MMEngine Contributors", email = "openmmlab@gmail.com" }]
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+]
+dynamic = ["version"]
+readme = "README.md"
+dependencies = [
+    "addict",
+    "matplotlib",
+    "mmengine-config>=0.10.10",
+    "numpy",
+    "opencv-python-headless",
+    "pyyaml",
+    "regex;sys_platform=='win32'",
+    "rich",
+    "termcolor",
+]
+
+[project.urls]
+Home = "https://github.com/llteco/mmengine"
+Docs = "https://mmsegmentation.readthedocs.io/en/main/"
+
+[project.optional-dependencies]
+tests = [
+    "aim<=3.17.5;sys_platform!='win32'",
+    "bitsandbytes",
+    "clearml",
+    "coverage",
+    "dadaptation",
+    "dvclive",
+    "lion-pytorch",
+    "lmdb",
+    "mlflow",
+    "parameterized",
+    "pydantic==1.10.9",
+    "pytest",
+    "toml",
+    "transformers",
+]
+
+[tool.uv.sources]
+mmengine-config = { git = "https://github.com/llteco/mmengine-config.git" }

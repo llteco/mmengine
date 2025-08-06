@@ -1,9 +1,9 @@
 addict
 matplotlib
-mmengine-config
+mmengine-config>=0.10.9
 numpy
+opencv-python-headless
 pyyaml
 regex;sys_platform=='win32'
 rich
 termcolor
-yapf
