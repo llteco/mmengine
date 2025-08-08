@@ -79,7 +79,7 @@ class BrowseDatasetTask(Task):
                     encoding='utf-8',
                 ) as f:
                     f.write(
-                        f"The source filepath of img_{img_idx}.jpg"
+                        f"The source filepath of img_{img_idx}.jpg "
                         f"is `{img_path}`.\n"
                     )
 
