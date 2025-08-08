@@ -28,7 +28,7 @@ def choose_requirement(primary, secondary):
 
 def get_version():
     vars = {}
-    with open(version_file, encoding="utf-8") as f:
+    with open(version_file, encoding='utf-8') as f:
         exec(compile(f.read(), version_file, 'exec'), None, vars)
     return vars['__version__']
 

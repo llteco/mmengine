@@ -2,11 +2,8 @@
 import importlib
 import os.path as osp
 
-from mme.config.utils import (
-    _get_cfg_metainfo,
-    _get_external_cfg_base_path,
-    _get_package_and_cfg_path,
-)
+from mme.config.utils import (_get_cfg_metainfo, _get_external_cfg_base_path,
+                              _get_package_and_cfg_path)
 
 from mmengine.config import Config
 from mmengine.registry import MODELS, DefaultScope
