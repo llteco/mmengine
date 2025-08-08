@@ -76,8 +76,8 @@ class PixelData(BaseDataElement):
                     ':obj:`PixelData` '
                     f'{self.shape}')
             assert value.ndim in [
-                2, 3
-            ], f'The dim of value must be 2 or 3, but got {value.ndim}'
+                2, 3, 4
+            ], f'The dim of value must be 2, 3, or 4, but got {value.ndim}'
             if value.ndim == 2:
                 value = value[None]
                 warnings.warn('The shape of value will convert from '
@@ -111,9 +111,11 @@ class PixelData(BaseDataElement):
                         'The type of element in input must be int or slice, '
                         f'but got {type(single_item)}')
             tmp_item.insert(0, slice(None, None, None))
-            item = tuple(tmp_item)
+            item3 = tuple(tmp_item)
+            item4 = (slice(None, None, None),) + item3
             for k, v in self.items():
-                setattr(new_data, k, v[item])
+                assert v.ndim in (3, 4), f"Expected tensor with 3 or 4 dimensions, got {v.ndim}"
+                setattr(new_data, k, v[item3] if v.ndim == 3 else v[item4])
         else:
             raise TypeError(
                 f'Unsupported type {type(item)} for slicing PixelData')

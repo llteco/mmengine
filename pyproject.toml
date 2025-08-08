@@ -51,5 +51,8 @@ tests = [
     "transformers",
 ]
 
+[project.scripts]
+mmengine-cli = "mmengine.cli.__main__:main"
+
 [tool.uv.sources]
 mmengine-config = { git = "https://github.com/llteco/mmengine-config.git" }
