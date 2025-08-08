@@ -114,7 +114,7 @@ class PixelData(BaseDataElement):
             item3 = tuple(tmp_item)
             item4 = (slice(None, None, None),) + item3
             for k, v in self.items():
-                assert v.ndim in (3, 4)
+                assert v.ndim in (3, 4), f"Expected tensor with 3 or 4 dimensions, got {v.ndim}"
                 setattr(new_data, k, v[item3] if v.ndim == 3 else v[item4])
         else:
             raise TypeError(
