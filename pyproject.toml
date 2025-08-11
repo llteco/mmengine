@@ -55,4 +55,4 @@ tests = [
 mmengine-cli = "mmengine.cli.__main__:main"
 
 [tool.uv.sources]
-mmengine-config = { git = "https://github.com/llteco/mmengine-config.git", branch="main" }
+mmengine-config = { git = "https://github.com/llteco/mmengine-config.git", rev="7592bce" }
