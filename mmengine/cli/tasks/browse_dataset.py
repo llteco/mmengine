@@ -107,7 +107,7 @@ class BrowseDatasetTask(Task):
             gt_sem_seg = data_sample.gt_sem_seg.data.copy()
         for idx, img in enumerate(imgs):
             if has_gt:
-                data_sample.gt_sem_seg.data = gt_sem_seg[:, idx]  # type: ignore
+                data_sample.gt_sem_seg.data = gt_sem_seg[idx]  # type: ignore
             visualizer.add_datasample(
                 name=osp.basename(img_path) + f"%{idx}",
                 image=img.copy(),
