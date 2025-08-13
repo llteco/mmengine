@@ -55,7 +55,8 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
                  map_location=None,
                  progress=True,
                  check_hash=False,
-                 file_name=None):
+                 file_name=None,
+                 weights_only=True):
         r"""Loads the Torch serialized object at the given URL.
 
         If downloaded file is a zip file, it will be automatically decompressed
@@ -78,6 +79,7 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
                 Defaults to False
             file_name (str, optional): name for the downloaded file. Filename
                 from ``url`` will be used if not set. Defaults to None.
+            weights_only (bool, optional): see torch.load
         Example:
             >>> url = ('https://s3.amazonaws.com/pytorch/models/resnet18-5c106'
             ...        'cde.pth')
@@ -114,7 +116,10 @@ if TORCH_VERSION != 'parrots' and digit_version(TORCH_VERSION) < digit_version(
             return _legacy_zip_load(cached_file, model_dir, map_location)
 
         try:
-            return torch.load(cached_file, map_location=map_location)
+            return torch.load(
+                cached_file,
+                map_location=map_location,
+                weights_only=weights_only)
         except RuntimeError as error:
             if digit_version(TORCH_VERSION) < digit_version('1.5.0'):
                 warnings.warn(

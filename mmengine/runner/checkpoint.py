@@ -308,7 +308,11 @@ class CheckpointLoader:
                 return cls._schemes[p]
 
     @classmethod
-    def load_checkpoint(cls, filename, map_location=None, logger='current'):
+    def load_checkpoint(cls,
+                        filename,
+                        map_location=None,
+                        logger='current',
+                        weights_only=False):
         """Load checkpoint through URL scheme path.
 
         Args:
@@ -316,6 +320,8 @@ class CheckpointLoader:
             map_location (str, optional): Same as :func:`torch.load`.
                 Defaults to None
             logger (str): The logger for message. Defaults to 'current'.
+            weights_only (bool): weights_only in torch.load, set to
+                True to avoid loading pickled modules. Defaults to False.
 
         Returns:
             dict or OrderedDict: The loaded checkpoint.
@@ -327,16 +333,20 @@ class CheckpointLoader:
             f'Loads checkpoint by {class_name[10:]} backend from path: '
             f'{filename}',
             logger=logger)
-        return checkpoint_loader(filename, map_location)
+        return checkpoint_loader(
+            filename=filename,
+            map_location=map_location,
+            weights_only=weights_only)
 
 
 @CheckpointLoader.register_scheme(prefixes='')
-def load_from_local(filename, map_location):
+def load_from_local(filename, map_location, weights_only=False):
     """Load checkpoint by local file path.
 
     Args:
         filename (str): local checkpoint file path
         map_location (str, optional): Same as :func:`torch.load`.
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -344,7 +354,8 @@ def load_from_local(filename, map_location):
     filename = osp.expanduser(filename)
     if not osp.isfile(filename):
         raise FileNotFoundError(f'{filename} can not be found.')
-    checkpoint = torch.load(filename, map_location=map_location)
+    checkpoint = torch.load(
+        filename, map_location=map_location, weights_only=weights_only)
     return checkpoint
 
 
@@ -352,7 +363,8 @@ def load_from_local(filename, map_location):
 def load_from_http(filename,
                    map_location=None,
                    model_dir=None,
-                   progress=os.isatty(0)):
+                   progress=os.isatty(0),
+                   weights_only=False):
     """Load checkpoint through HTTP or HTTPS scheme path. In distributed
     setting, this function only download checkpoint at local rank 0.
 
@@ -362,6 +374,7 @@ def load_from_http(filename,
         map_location (str, optional): Same as :func:`torch.load`.
         model_dir (string, optional): directory in which to save the object,
             Defaults to None
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -372,7 +385,8 @@ def load_from_http(filename,
             filename,
             model_dir=model_dir,
             map_location=map_location,
-            progress=progress)
+            progress=progress,
+            weights_only=weights_only)
     if world_size > 1:
         torch.distributed.barrier()
         if rank > 0:
@@ -380,12 +394,13 @@ def load_from_http(filename,
                 filename,
                 model_dir=model_dir,
                 map_location=map_location,
-                progress=progress)
+                progress=progress,
+                weights_only=weights_only)
     return checkpoint
 
 
 @CheckpointLoader.register_scheme(prefixes='pavi://')
-def load_from_pavi(filename, map_location=None):
+def load_from_pavi(filename, map_location=None, weights_only=False):
     """Load checkpoint through the file path prefixed with pavi. In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -394,6 +409,7 @@ def load_from_pavi(filename, map_location=None):
         filename (str): checkpoint file path with pavi prefix
         map_location (str, optional): Same as :func:`torch.load`.
           Defaults to None
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -412,13 +428,19 @@ def load_from_pavi(filename, map_location=None):
     with TemporaryDirectory() as tmp_dir:
         downloaded_file = osp.join(tmp_dir, model.name)
         model.download(downloaded_file)
-        checkpoint = torch.load(downloaded_file, map_location=map_location)
+        checkpoint = torch.load(
+            downloaded_file,
+            map_location=map_location,
+            weights_only=weights_only)
     return checkpoint
 
 
 @CheckpointLoader.register_scheme(
     prefixes=[r'(\S+\:)?s3://', r'(\S+\:)?petrel://'])
-def load_from_ceph(filename, map_location=None, backend='petrel'):
+def load_from_ceph(filename,
+                   map_location=None,
+                   backend='petrel',
+                   weights_only=False):
     """Load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -428,6 +450,7 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
         map_location (str, optional): Same as :func:`torch.load`.
         backend (str, optional): The storage backend type.
             Defaults to 'petrel'.
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -435,12 +458,13 @@ def load_from_ceph(filename, map_location=None, backend='petrel'):
     file_backend = get_file_backend(
         filename, backend_args={'backend': backend})
     with io.BytesIO(file_backend.get(filename)) as buffer:
-        checkpoint = torch.load(buffer, map_location=map_location)
+        checkpoint = torch.load(
+            buffer, map_location=map_location, weights_only=weights_only)
     return checkpoint
 
 
 @CheckpointLoader.register_scheme(prefixes=('modelzoo://', 'torchvision://'))
-def load_from_torchvision(filename, map_location=None):
+def load_from_torchvision(filename, map_location=None, weights_only=False):
     """Load checkpoint through the file path prefixed with modelzoo or
     torchvision.
 
@@ -448,6 +472,7 @@ def load_from_torchvision(filename, map_location=None):
         filename (str): checkpoint file path with modelzoo or
             torchvision prefix
         map_location (str, optional): Same as :func:`torch.load`.
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -462,11 +487,14 @@ def load_from_torchvision(filename, map_location=None):
         model_name = filename[11:]
     else:
         model_name = filename[14:]
-    return load_from_http(model_urls[model_name], map_location=map_location)
+    return load_from_http(
+        model_urls[model_name],
+        map_location=map_location,
+        weights_only=weights_only)
 
 
 @CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
-def load_from_openmmlab(filename, map_location=None):
+def load_from_openmmlab(filename, map_location=None, weights_only=False):
     """Load checkpoint through the file path prefixed with open-mmlab or
     openmmlab.
 
@@ -475,6 +503,7 @@ def load_from_openmmlab(filename, map_location=None):
         openmmlab prefix
         map_location (str, optional): Same as :func:`torch.load`.
           Defaults to None
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -499,22 +528,25 @@ def load_from_openmmlab(filename, map_location=None):
     model_url = model_urls[model_name]
     # check if is url
     if model_url.startswith(('http://', 'https://')):
-        checkpoint = load_from_http(model_url, map_location=map_location)
+        checkpoint = load_from_http(
+            model_url, map_location=map_location, weights_only=weights_only)
     else:
         filename = osp.join(_get_mmengine_home(), model_url)
         if not osp.isfile(filename):
             raise FileNotFoundError(f'{filename} can not be found.')
-        checkpoint = torch.load(filename, map_location=map_location)
+        checkpoint = torch.load(
+            filename, map_location=map_location, weights_only=weights_only)
     return checkpoint
 
 
 @CheckpointLoader.register_scheme(prefixes='mmcls://')
-def load_from_mmcls(filename, map_location=None):
+def load_from_mmcls(filename, map_location=None, weights_only=False):
     """Load checkpoint through the file path prefixed with mmcls.
 
     Args:
         filename (str): checkpoint file path with mmcls prefix
         map_location (str, optional): Same as :func:`torch.load`.
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -523,12 +555,17 @@ def load_from_mmcls(filename, map_location=None):
     model_urls = get_mmcls_models()
     model_name = filename[8:]
     checkpoint = load_from_http(
-        model_urls[model_name], map_location=map_location)
+        model_urls[model_name],
+        map_location=map_location,
+        weights_only=weights_only)
     checkpoint = _process_mmcls_checkpoint(checkpoint)
     return checkpoint
 
 
-def _load_checkpoint(filename, map_location=None, logger=None):
+def _load_checkpoint(filename,
+                     map_location=None,
+                     logger=None,
+                     weights_only=False):
     """Load checkpoint from somewhere (modelzoo, file, url).
 
     Args:
@@ -539,16 +576,21 @@ def _load_checkpoint(filename, map_location=None, logger=None):
            Defaults to None.
         logger (:mod:`logging.Logger`, optional): The logger for error message.
            Defaults to None
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint. It can be either an
         OrderedDict storing model weights or a dict containing other
         information, which depends on the checkpoint.
     """
-    return CheckpointLoader.load_checkpoint(filename, map_location, logger)
+    return CheckpointLoader.load_checkpoint(
+        filename, map_location, logger, weights_only)
 
 
-def _load_checkpoint_with_prefix(prefix, filename, map_location=None):
+def _load_checkpoint_with_prefix(prefix,
+                                 filename,
+                                 map_location=None,
+                                 weights_only=False):
     """Load partial pretrained model with specific prefix.
 
     Args:
@@ -558,12 +600,14 @@ def _load_checkpoint_with_prefix(prefix, filename, map_location=None):
             details.
         map_location (str | None): Same as :func:`torch.load`.
             Defaults to None.
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
 
-    checkpoint = _load_checkpoint(filename, map_location=map_location)
+    checkpoint = _load_checkpoint(
+        filename, map_location=map_location, weights_only=weights_only)
 
     if 'state_dict' in checkpoint:
         state_dict = checkpoint['state_dict']
@@ -613,7 +657,8 @@ def load_checkpoint(model,
                     map_location=None,
                     strict=False,
                     logger=None,
-                    revise_keys=[(r'^module\.', '')]):
+                    revise_keys=[(r'^module\.', '')],
+                    weights_only=False):
     """Load checkpoint from a file or URI.
 
     Args:
@@ -629,11 +674,12 @@ def load_checkpoint(model,
             state_dict in checkpoint. Each item is a (pattern, replacement)
             pair of the regular expression operations. Defaults to strip
             the prefix 'module.' by [(r'^module\\.', '')].
+        weights_only (bool, optional): Same as :func:`torch.load`.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    checkpoint = _load_checkpoint(filename, map_location, logger)
+    checkpoint = _load_checkpoint(filename, map_location, logger, weights_only)
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(

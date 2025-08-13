@@ -316,7 +316,7 @@ def test_checkpoint_loader():
         assert loader.__name__ == fn_name
 
     @CheckpointLoader.register_scheme(prefixes='ftp://')
-    def load_from_ftp(filename, map_location):
+    def load_from_ftp(filename, map_location, **kwargs):
         return dict(filename=filename)
 
     # test register_loader
@@ -324,7 +324,7 @@ def test_checkpoint_loader():
     loader = CheckpointLoader._get_checkpoint_loader(filename)
     assert loader.__name__ == 'load_from_ftp'
 
-    def load_from_ftp1(filename, map_location):
+    def load_from_ftp1(filename, map_location, **kwargs):
         return dict(filename=filename)
 
     # test duplicate registered error
