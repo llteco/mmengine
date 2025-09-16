@@ -289,10 +289,10 @@ class TestFileClient:
                         osp.join('dir2', 'img.jpg'), 'text1.txt', 'text2.txt'
                     }
 
-    @patch('petrel_client.client.Client', MockPetrelClient)
     @pytest.mark.parametrize('backend,prefix', [('petrel', None),
                                                 (None, 's3')])
     def test_petrel_backend(self, backend, prefix):
+        pytest.skip('petrel is only for internal usage')
         petrel_backend = FileClient(backend=backend, prefix=prefix)
 
         # test `allow_symlink` attribute

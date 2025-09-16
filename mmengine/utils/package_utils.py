@@ -14,8 +14,8 @@ def is_installed(package: str) -> bool:
     # Therefore, import it in function scope to save time.
     import importlib.util
 
-    import pkg_resources
-    from pkg_resources import get_distribution
+    import pkg_resources  # type: ignore
+    from pkg_resources import get_distribution  # type: ignore
 
     # refresh the pkg_resources
     # more datails at https://github.com/pypa/setuptools/issues/373
