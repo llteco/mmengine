@@ -35,12 +35,13 @@ Docs = "https://mmsegmentation.readthedocs.io/en/main/"
 
 [project.optional-dependencies]
 tests = [
-    "aim<=3.17.5;sys_platform!='win32'",
     "bitsandbytes",
     "clearml",
     "coverage",
     "dadaptation",
     "dvclive",
+    "flake8>=7.3.0",
+    "flake8-pyproject>=1.2.3",
     "lion-pytorch",
     "lmdb",
     "mlflow",
@@ -55,4 +56,10 @@ tests = [
 mmengine-cli = "mmengine.cli.__main__:main"
 
 [tool.uv.sources]
-mmengine-config = { git = "https://github.com/llteco/mmengine-config.git", rev="7592bce" }
+mmengine-config = { git = "https://github.com/llteco/mmengine-config.git", rev="4b43fc2" }
+
+[tool.flake8]
+ignore = ['F824', 'W503', 'W504']
+exclude = ["./examples", "./tests"]
+max-line-length = 88
+max-complexity = 30
